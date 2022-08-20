@@ -2,13 +2,15 @@
 
 A CLI tool for encrypting and decrypting pipe data
 
+https://github.com/weidai11/cryptopp
+https://raw.githubusercontent.com/noloader/cryptopp-cmake/master/CMakeLists.txt
+
 ## General Notice
 
 PipeCrypt uses [AES-256-CTR](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CTR)
-for encryption and [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) and
-[RIPEMD-128](https://en.wikipedia.org/wiki/RIPEMD) for password hash generation.
+for encryption and [SHA3-256](https://en.wikipedia.org/wiki/SHA-3) for password hash generation.
 While CTR offers many benefits, it does not protect against data manipulation like
-[AES-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode).
+[AES-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) does.
 
 ## Usage
 

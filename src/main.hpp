@@ -12,7 +12,7 @@ THESE HEADERS ARE PRECOMPILED AMONG THE WHOLE CMAKE TARGET
 #include <cryptopp/aes.h>
 #include <cryptopp/filters.h>
 
-#include <cryptopp/sha3.h>
+#include <cryptopp/sha.h>
 #include <cryptopp/ripemd.h>
 
 #include <iomanip>
