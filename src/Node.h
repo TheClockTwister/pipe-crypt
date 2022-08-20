@@ -5,11 +5,11 @@ template<class T>
 class Node {
 public:
     T data;
-    Node* next, * prev;
+    Node* next;
 
     Node(T data_): data(data_) {};
 
-    Node(T data_, Node* next_, Node* prev_): data(data_), prev(prev_), next(next_) {};
+    Node(T data_, Node* next_): data(data_), next(next_) {};
 
     ~Node(){};
 };

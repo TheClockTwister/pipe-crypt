@@ -62,6 +62,7 @@ void readerThread(){
 
 void writerThread(){
     Node<Block>* bp;
+    
     while (!PROCESSING_FINISHED || blockChain.size()){
         blockChainLock.lock();
         try{
@@ -85,46 +86,59 @@ bool decryptMode;
 void encoderThread(){
     Node<Block>* bp;
     std::string processedData;
+    bool last = false;
 
     CryptoPP::byte key[ CryptoPP::AES::DEFAULT_KEYLENGTH ], iv[ CryptoPP::AES::BLOCKSIZE ];
     memset( key, 0x00, CryptoPP::AES::DEFAULT_KEYLENGTH );
     memset( iv, 0x00, CryptoPP::AES::BLOCKSIZE );
     
     CryptoPP::AES::Encryption aesEncryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH);
-    CryptoPP::CTR_Mode_ExternalCipher::Encryption cbcEncryption( aesEncryption, iv );
+    CryptoPP::CTR_Mode_ExternalCipher::Encryption cbcEncryption( aesEncryption, iv);
     CryptoPP::AES::Decryption aesDecryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH);
-    CryptoPP::CTR_Mode_ExternalCipher::Decryption cbcDecryption( aesDecryption, iv );
+    CryptoPP::CTR_Mode_ExternalCipher::Decryption cbcDecryption( aesDecryption, iv);
 
     CryptoPP::StreamTransformationFilter encryptor(cbcEncryption, new CryptoPP::StringSink( processedData ) );
     CryptoPP::StreamTransformationFilter decryptor(cbcDecryption, new CryptoPP::StringSink( processedData ) );
     CryptoPP::StreamTransformationFilter* filter = decryptMode ? &decryptor : &encryptor;
 
     while (!READING_FINISHED || blockChain.size()){
+        
         if (blockChain.size()) {
             // find next un-encoded block in chain
             blockChainLock.lock();
             bp = blockChain.front();
-            while (bp != nullptr && bp->data.encoded){ bp = bp->next; }
+            if (bp != nullptr){
+                if (bp->data.encoded){
+                    bp = nullptr;
+                }
+            }
+            // print("E4b\n")
+            // while (bp != nullptr && bp->data.encoded){ bp = bp->next; }
             blockChainLock.unlock();
             // if we found an un.encoded block
             if (bp != nullptr){
                 /// processing takes place here
                 filter->Put( reinterpret_cast<const unsigned char*>( bp->data.data.c_str() ), bp->data.data.length() );
+       
                 if (bp->data.isLast){
+         
                     print("Processing Last Block\n")
+           
                     filter->MessageEnd();
+                    last = true;
+     
                 }
                 bp->data.data = processedData;
                 processedData.clear();
+
                 bp->data.encoded = true;
             } else {
                 SLEEP_NS(100); // block chain has no un-encoded blocks
             }
-            print("E\n")
         } else {
             SLEEP_NS(5); // block chain is currently empty
         }
-        
+        // if (last) break;
     }
     PROCESSING_FINISHED = true;
     std::cerr << "Finished processing\n";
@@ -133,7 +147,8 @@ void encoderThread(){
 int main() {
     int a = ( BLOCK_SIZE * BLOCK_BUFFER) /1024;
     std::cerr << "PipeCrypt buffer size is " << BLOCK_SIZE/1024 << " KiB x " << BLOCK_BUFFER << " = " << a <<" KiB\n";
-    decryptMode = true;
+    // decryptMode = true;
+    decryptMode = false;
 
     freopen(NULL, "rb", stdin);      // re-open stdin in binary mode
 

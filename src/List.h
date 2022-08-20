@@ -25,7 +25,6 @@ class List {
             tail = head;
         } else {
             head->next = new Node<T>(data);
-            head->next->prev = head;
             head = head->next;
         }
         length++;
@@ -35,8 +34,14 @@ class List {
         if (length == 0){ throw std::range_error("List is empty"); }
 
         Node<T> item = *tail;
-        tail = item.next;
-        if (tail) tail->prev = nullptr;
+
+        if (length == 1){
+            tail = nullptr;
+            head = nullptr;
+        } else {
+            tail = item.next;
+        }
+
         length--;
         return std::move(item.data);
     }
