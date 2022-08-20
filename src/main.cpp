@@ -3,27 +3,6 @@
 
 #define SLEEP_NS(ns) std::this_thread::sleep_for (std::chrono::nanoseconds(ns))
 
-typedef std::shared_ptr<std::string> str_ptr;
-
-//Key and IV setup
-CryptoPP::byte key[ CryptoPP::AES::DEFAULT_KEYLENGTH ], iv[ CryptoPP::AES::BLOCKSIZE ];
-//
-// String and Sink setup
-//
-str_ptr ciphertext = std::make_shared<std::string>(std::string());
-str_ptr decryptedtext = std::make_shared<std::string>(std::string());
-
-//
-// Create Cipher Text
-//
-CryptoPP::AES::Encryption aesEncryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH);
-CryptoPP::CBC_Mode_ExternalCipher::Encryption cbcEncryption( aesEncryption, iv );
-CryptoPP::StreamTransformationFilter stfEncryptor(cbcEncryption, new CryptoPP::StringSink( *ciphertext ) );
-
-CryptoPP::AES::Decryption aesDecryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH);
-CryptoPP::CBC_Mode_ExternalCipher::Decryption cbcDecryption( aesDecryption, iv );
-CryptoPP::StreamTransformationFilter stfDecryptor(cbcDecryption, new CryptoPP::StringSink( *decryptedtext ) );
-
 
 struct Block {
     std::shared_ptr<std::string> data;
@@ -47,9 +26,6 @@ bool READING_FINISHED = false;
 bool PROCESSING_FINISHED = false;
 bool WRITING_FINISHED = false;
 
-void encryptBlock(Block& c){
-
-}
 
 void writeBlock(Block c){
     std::cout.write(c.data->c_str(), c.data->length());
@@ -136,7 +112,6 @@ void encoderThread(){
 }
 
 
-
 int main() {
     int a = ( BLOCK_SIZE * BLOCK_BUFFER) /1024;
     std::cerr << "PipeCrypt buffer size is " << BLOCK_SIZE/1024 << " KiB x " << BLOCK_BUFFER << " = " << a <<" KiB\n";
@@ -146,16 +121,10 @@ int main() {
     std::thread tr(readerThread);
     std::thread te(encoderThread);
     std::thread tw(writerThread);
-
-    // //Key and IV setup
-    // memset( key, 0x00, CryptoPP::AES::DEFAULT_KEYLENGTH );
-    // memset( iv, 0x00, CryptoPP::AES::BLOCKSIZE );
-
     
     tr.join();
     te.join();
     tw.join();
-
 
     return 0;
 }
@@ -163,46 +132,3 @@ int main() {
 // dd if=/dev/zero of=test.bin bs=1024 count=0 seek=$[500]
 // pv test.bin | build/PipeCrypt > test2.bin
 // echo "$(cmp --silent test.bin test2.bin; echo $?)"
-
-
-int main3() {
-    
-    
-    //
-    // Dump Plain Text
-    //
-    // std::cout << "Plain Text (" << plaintext->size() << " bytes)" << std::endl;
-    // std::cout << plaintext;
-    std::cout << std::endl << std::endl;
-
-    
-    
-
-    //
-    // Dump Cipher Text
-    //
-    std::cout << "Cipher Text (" << ciphertext->size() << " bytes)" << std::endl;
-
-    for( int i = 0; i < ciphertext->size(); i++ ) {
-
-        std::cout << "0x" << std::hex << (0xFF & static_cast<CryptoPP::byte>((*ciphertext)[i])) << " ";
-    }
-
-    std::cout << std::endl << std::endl;
-
-    //
-    // Decrypt
-    //
-    
-    stfDecryptor.Put( reinterpret_cast<const unsigned char*>( ciphertext->c_str() ), ciphertext->size() );
-    stfDecryptor.MessageEnd();
-
-    //
-    // Dump Decrypted Text
-    //
-    std::cout << "Decrypted Text: " << std::endl;
-    std::cout << decryptedtext;
-    std::cout << std::endl << std::endl;
-
-    return 0;
-}
