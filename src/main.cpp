@@ -17,10 +17,9 @@ List<Block> blockChain = List<Block>();
 std::mutex blockChainLock;
 std::mutex printMutex;
 
-// #define print(x)  printMutex.lock(); std::cerr << x; printMutex.unlock();
 #define SLEEP_NS(ns) std::this_thread::sleep_for (std::chrono::nanoseconds(ns))
 
-int BLOCK_SIZE = 1024*4;    // max length of one block (in bytes)
+int BLOCK_SIZE = 1024*8;    // max length of one block (in bytes)
 int CHAIN_LENGTH = 64;      // max length of the block chain (in blocks)
 
 bool READING_FINISHED = false;
