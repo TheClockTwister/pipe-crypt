@@ -16,12 +16,39 @@ See [credits](#credits-and-thanks) if you want to know more.
 - Custom nonce values may be specified
 - Byte-wise encrypt/decrypt to support instantaneous output with `-b 1`
 
-## Backlog (Planned Features)
+## Usage Examples
 
-- More AES modes like [AES-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) and EBC, CBC, etc.
-- More hash functions for password and nonce
-- Option to choose hash functions for password/nonce separately
-- specify a password file with `-f` rather than exposing the password to CLI
+### Encrypting/Decrypting files
+
+- Encrypting a file
+
+  ```bash
+  cat SOME_FILE | pipe-crypt ... - > SOME_FILE.crypt
+  ```
+
+- Decrypting a file
+
+  ```bash
+  cat SOME_FILE.crypt | pipe-crypt ... > SOME_FILE
+  ```
+
+### Combined with `tar`
+
+- Creating an encrypted archive
+
+  ```bash
+  tar -c SOME_FOLDER | pipe-crypt ... > archive.tar.crypt
+  ```
+
+- Extracting an encrypted archive
+
+  ```bash
+  cat archive.tar.crypt | pipe-crypt ... | tar -x
+  ```
+
+## Benchmarks
+
+_Reference system is an AMD Ryzen 9 3900X_
 
 ## Tips for maximum performance and security
 
@@ -84,51 +111,18 @@ Most probably, you don't need to tune this option, but if your input yields some
   echo "$(cmp --silent test.bin decrypted.bin; echo $?)"
   ```
 
-## Benchmarks
+## Backlog (Planned Features)
 
-_Reference system is an AMD Ryzen 9 3900X_
-
-
-
-
-
-## Usage Examples
-
-### Encrypting/Decrypting files
-
-- Encrypting a file
-
-  ```bash
-  cat SOME_FILE | pipe-crypt ... - > SOME_FILE.crypt
-  ```
-
-- Decrypting a file
-
-  ```bash
-  cat SOME_FILE.crypt | pipe-crypt ... > SOME_FILE
-  ```
-
-### Combined with `tar`
-
-- Creating an encrypted archive
-
-  ```bash
-  tar -c SOME_FOLDER | pipe-crypt ... > archive.tar.crypt
-  ```
-
-- Extracting an encrypted archive
-
-  ```bash
-  cat archive.tar.crypt | pipe-crypt ... | tar -x
-  ```
+- More AES modes like [AES-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) and EBC, CBC, etc.
+- More hash functions for password and nonce
+- Option to choose hash functions for password/nonce separately
+- specify a password file with `-f` rather than exposing the password to CLI
 
 ## Credits and thanks
 
 - Argument parsing is done with [argparse](https://github.com/p-ranav/argparse) by [p-ranav](https://github.com/p-ranav), a very great and intuitive library supporting CMake across platforms
 
 - pipe-crypt uses [Crypto++](https://github.com/weidai11/cryptopp) for all cryptographic functionalities, it is by far the most used C++ library for cryptography and can virtually do everything, if you dig deep enough in the documentation.
-
-- To use Crypto++ with CMake, I use the [Crypto++ CMake file](https://github.com/noloader/cryptopp-cmake) by [noloader](https://github.com/noloader). Great thanks for that!
 
 ## Disclaimer
 
