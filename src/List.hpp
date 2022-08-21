@@ -1,7 +1,7 @@
 #ifndef _LIST_H
 #define _LIST_H
 
-#include "Node.h"
+#include "Node.hpp"
 
 #include <iostream>
 #include <string>

@@ -1,16 +1,8 @@
 #include "main.hpp"
-#include "List.h"
+#include "List.hpp"
+#include "Block.hpp"
 
 #include <argparse/argparse.hpp>
-
-struct Block {
-    std::string data;
-    bool encoded = false;
-    bool isLast = false;
-
-    Block(std::string&& data_) : data(std::move(data_)) {}
-    Block(std::string&& data_, bool last) : data(std::move(data_)), isLast(last) {}
-};
 
 
 List<Block> blockChain = List<Block>();
@@ -29,24 +21,11 @@ bool WRITING_FINISHED = false;
 CryptoPP::byte key[32], iv[32]; // 256-bit hash as key and nonce
 
 
-void writeBlock(Block c){
-    std::cout.write(c.data.c_str(), c.data.length());
-}
-
-Block readBlock(int n){
-    char* buf = new char[n];
-    int rc = read(0, buf, n);
-    std::string x = std::string(std::move(buf), rc);
-    delete[] buf;
-    return (rc == 0) ? Block( std::string(), true) : Block( std::move(x));
-}
-
-
 void readerThread(){
     // read new Blocks while stdin is full
     bool lastBlock = false;
     while (!lastBlock){
-        Block c = readBlock(BLOCK_SIZE);
+        Block c = Block::readBlock(BLOCK_SIZE);
         lastBlock = c.isLast;
         while (blockChain.size() >= CHAIN_LENGTH){ SLEEP_NS(5); } // chain is full
         blockChainLock.lock();
@@ -65,7 +44,7 @@ void writerThread(){
             bp = blockChain.front();
             if (bp == nullptr){ throw std::range_error(""); }
             if (!(bp->data.encoded)){ throw std::range_error(""); }
-            writeBlock(blockChain.pop());
+            Block::writeBlock(blockChain.pop());
             blockChainLock.unlock();
             
         } catch (std::range_error e) {
@@ -145,13 +124,13 @@ int main(int argc, char* argv[]) {
     nonce = nonce != "" ? nonce : password;
 
     // calculate hashes for key and nonce
-    CryptoPP::byte digest[CryptoPP::SHA256::DIGESTSIZE];
+    CryptoPP::byte digest[CryptoPP::SHA3_256::DIGESTSIZE];
 
     memmove(digest, password.c_str(), password.length());
-    CryptoPP::SHA256().CalculateDigest(key, digest, password.length());
+    CryptoPP::SHA3_256().CalculateDigest(key, digest, password.length());
 
     memmove(digest, nonce.c_str(), nonce.length());
-    CryptoPP::SHA256().CalculateDigest(iv, digest, nonce.length());
+    CryptoPP::SHA3_256().CalculateDigest(iv, digest, nonce.length());
 
     if (!program.get<bool>("--quiet")){
         std::cerr << "PipeCrypt buffer size is "

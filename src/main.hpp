@@ -2,18 +2,14 @@
 #define PIPECRYPT_COMMON_HEADERS
 
 /*
-
-THESE HEADERS ARE PRECOMPILED AMONG THE WHOLE CMAKE TARGET
-"PIPECRYPT" AND ARE RE-COMPILED ONLY UPON CHANGE
-
+THESE HEADERS ARE PRECOMPILED AMONG THE WHOLE
+CMAKE TARGET AND ARE RE-COMPILED ONLY UPON CHANGE
 */
 
 #include <cryptopp/modes.h>
 #include <cryptopp/aes.h>
 #include <cryptopp/filters.h>
-
-#include <cryptopp/sha.h>
-#include <cryptopp/ripemd.h>
+#include <cryptopp/sha3.h>
 
 #include <iomanip>
 #include <string>
