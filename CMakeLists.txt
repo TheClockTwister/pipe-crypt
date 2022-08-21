@@ -11,7 +11,9 @@ include_directories(lib/argparser)
 add_executable(PipeCrypt src/main.cpp)
 target_link_libraries(PipeCrypt cryptopp pthread) ## Specifying cryptopp in uppercase gave me link error.
 target_precompile_headers(PipeCrypt PRIVATE src/main.hpp)
-target_compile_options(PipeCrypt PRIVATE -fpermissive -O3)
+target_compile_options(PipeCrypt PRIVATE -fpermissive)
 
 add_executable(Test test.cpp)
 target_link_libraries(Test cryptopp) ## Specifying cryptopp in uppercase gave me link error.
+
+add_compile_options(-O3)

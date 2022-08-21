@@ -19,12 +19,12 @@ class List {
         return length;
     }
 
-    void put(T data){
+    void put(T&& data){
         if (length == 0){ // if empty
-            head = new Node<T>(data);
+            head = new Node<T>(std::move(data));
             tail = head;
         } else {
-            head->next = new Node<T>(data);
+            head->next = new Node<T>(std::move(data));
             head = head->next;
         }
         length++;
@@ -33,17 +33,20 @@ class List {
     T pop(){
         if (length == 0){ throw std::range_error("List is empty"); }
 
-        Node<T> item = *tail;
+        Node<T>* item = tail;
 
         if (length == 1){
             tail = nullptr;
             head = nullptr;
         } else {
-            tail = item.next;
+            tail = item->next;
         }
 
         length--;
-        return std::move(item.data);
+        item->next = nullptr;
+        T data = std::move(item->data);
+        delete item;
+        return std::move(data);
     }
 
     Node<T>* front(){ return tail; }

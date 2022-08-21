@@ -19,7 +19,7 @@ std::mutex printMutex;
 
 #define SLEEP_NS(ns) std::this_thread::sleep_for (std::chrono::nanoseconds(ns))
 
-int BLOCK_SIZE = 1024*8;    // max length of one block (in bytes)
+int BLOCK_SIZE = 1024*512;    // max length of one block (in bytes)
 int CHAIN_LENGTH = 64;      // max length of the block chain (in blocks)
 
 bool READING_FINISHED = false;
@@ -36,7 +36,9 @@ void writeBlock(Block c){
 Block readBlock(int n){
     char* buf = new char[n];
     int rc = read(0, buf, n);
-    return (rc == 0) ? Block( std::string(), true) : Block( std::string(std::move(buf), rc));
+    std::string x = std::string(std::move(buf), rc);
+    delete[] buf;
+    return (rc == 0) ? Block( std::string(), true) : Block( std::move(x));
 }
 
 
@@ -46,6 +48,7 @@ void readerThread(){
     while (!lastBlock){
         Block c = readBlock(BLOCK_SIZE);
         lastBlock = c.isLast;
+        while (blockChain.size() >= CHAIN_LENGTH){ SLEEP_NS(5); } // chain is full
         blockChainLock.lock();
         blockChain.put(std::move(c));
         blockChainLock.unlock();
@@ -116,7 +119,6 @@ void encoderThread(){
 
 
 int main(int argc, char* argv[]) {
-    
 
     ap::parser p(argc, argv);
     p.add("-p", "--password",   "The key for encryption and decryption",            ap::mode::REQUIRED);
@@ -152,9 +154,11 @@ int main(int argc, char* argv[]) {
     std::cerr << "PipeCrypt buffer size is "
     << BLOCK_SIZE/1024 << " KiB x "
     << CHAIN_LENGTH << " = "
-    << ( BLOCK_SIZE * CHAIN_LENGTH) /1024 <<" KiB\n";
+    << ( BLOCK_SIZE * CHAIN_LENGTH) /(1024*1024) <<" MiB\n";
 
     freopen(NULL, "rb", stdin);      // re-open stdin in binary mode
+    std::setvbuf(stdin, nullptr, _IONBF, 0);
+    std::setvbuf(stdout, nullptr, _IONBF, 0);
 
     std::thread tr(readerThread);
     std::thread te(encoderThread);
