@@ -1,5 +1,7 @@
 # pipe-crypt
 
+# 🚧 WORK IN PROGRESS 🚧
+
 A CLI pipe tool for encrypting and decrypting data
 
 Following the UNIX philosophy "do one thing, do one thing only, but do it well",
@@ -84,6 +86,14 @@ Most probably, you don't need to tune this option, but if your input yields some
 - **If your input yields chunk-wise, so that the encryption cannot run continuously, increase the chain length**
 
 - **In such cases, you might want to increase the block size as well**
+
+## Building
+
+You can easily build the binary using Docker:
+
+```bash
+docker run --rm -it -v $(pwd):/work -w /work debian:bullseye /bin/bash ./build.sh
+```
 
 ## Testing
 

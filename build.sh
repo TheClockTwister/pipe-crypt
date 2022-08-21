@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# make sure git and build dependencies are installed
+apt-get update
+apt-get install -y git cmake build-essential
+
 # make sure the submodules are pulled
 mkdir -p lib
 git submodule update --init --recursive
