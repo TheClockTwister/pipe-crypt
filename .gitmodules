@@ -1,0 +1,6 @@
+[submodule "lib/cryptopp"]
+	path = lib/cryptopp
+	url = https://github.com/weidai11/cryptopp.git
+[submodule "lib/argparse"]
+	path = lib/argparse
+	url = https://github.com/p-ranav/argparse.git
