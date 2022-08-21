@@ -92,8 +92,13 @@ Most probably, you don't need to tune this option, but if your input yields some
 You can easily build the binary using Docker:
 
 ```bash
+git pull --recurse-submodules https://github.com/TheClockTwister/pipe-crypt.git
 docker run --rm -it -v $(pwd):/work -w /work debian:bullseye /bin/bash ./build.sh
 ```
+
+This will pull the repo and build an executable binary named `pipe-crypt` in the current directory.
+The build container is deleted upon completion (or error), so nothing is left behind except the
+Docker image of Debian Bullseye.
 
 ## Testing
 
