@@ -1,7 +1,7 @@
 #include "main.hpp"
 #include "List.h"
 
-#include "argparser.hpp"
+#include <argparse/argparse.hpp>
 
 struct Block {
     std::string data;
@@ -120,27 +120,29 @@ void encoderThread(){
 
 int main(int argc, char* argv[]) {
 
-    ap::parser p(argc, argv);
-    p.add("-p", "--password",   "The key for encryption and decryption",            ap::mode::REQUIRED);
-    p.add("-n", "--nonce",      "(optional) defaults to the password",              ap::mode::OPTIONAL);
+    argparse::ArgumentParser program("pipe-crypt");
+    program.add_argument("password").help("The key used for en-/decryption").required();
 
-    p.add("-b", "--block-size", "Buffer block size in bytes (default: 1024)",       ap::mode::OPTIONAL);
-    p.add("-c", "--chain-length", "Buffer chain length in blocks (default: 64)",    ap::mode::OPTIONAL);
+    program.add_argument("-n", "--nonce").help("(optional) defaults to the password").default_value(std::string(""));
+    program.add_argument("-b", "--block-size").help("Buffer block size in bytes (default: 1024)").default_value(1024).scan<'i',int>();
+    program.add_argument("-c", "--chain-length").help("Buffer chain length in blocks (default: 64)").default_value(64).scan<'i',int>();
 
-    // p.add("-v", "--verbose",    "More verbose output = more details",               ap::mode::BOOLEAN);
-    // p.add("-q", "--quiet",      "No output at all",                                 ap::mode::BOOLEAN);
+    program.add_argument("-q", "--quiet").help("No output at all").default_value(false).implicit_value(true);
     
-    auto args = p.parse();
-
-    if (!args.parsed_successfully()) {
-	    std::cerr << "Invalid arguments!\n";
-        return -1;
+    try {
+    program.parse_args(argc, argv);
+    }
+    catch (const std::runtime_error& err) {
+    std::cerr << err.what() << std::endl;
+    std::cerr << program;
+    std::exit(1);
     }
 
-    BLOCK_SIZE = (args["-b"].empty() ? BLOCK_SIZE : std::stoi(args["-b"]));
-    CHAIN_LENGTH = (args["-c"].empty() ? CHAIN_LENGTH : std::stoi(args["-c"]));
-    std::string password = args["-p"];
-    std::string nonce = (args["-n"].empty() ? args["-p"] : args["-n"]);
+    BLOCK_SIZE = program.get<int>("--block-size");
+    CHAIN_LENGTH = program.get<int>("--chain-length");
+    std::string password = program.get<std::string>("password");
+    std::string nonce = program.get<std::string>("-n");
+    nonce = nonce != "" ? nonce : password;
 
     // calculate hashes for key and nonce
     CryptoPP::byte digest[CryptoPP::SHA256::DIGESTSIZE];
@@ -151,10 +153,13 @@ int main(int argc, char* argv[]) {
     memmove(digest, nonce.c_str(), nonce.length());
     CryptoPP::SHA256().CalculateDigest(iv, digest, nonce.length());
 
-    std::cerr << "PipeCrypt buffer size is "
-    << BLOCK_SIZE/1024 << " KiB x "
-    << CHAIN_LENGTH << " = "
-    << ( BLOCK_SIZE * CHAIN_LENGTH) /(1024*1024) <<" MiB\n";
+    if (!program.get<bool>("--quiet")){
+        std::cerr << "PipeCrypt buffer size is "
+        << BLOCK_SIZE/1024.f << " KiB x "
+        << CHAIN_LENGTH << " = "
+        << round((BLOCK_SIZE*CHAIN_LENGTH)/float(1024*1024)*100)/100 <<" MiB\n";
+    }
+    
 
     freopen(NULL, "rb", stdin);      // re-open stdin in binary mode
     std::setvbuf(stdin, nullptr, _IONBF, 0);
